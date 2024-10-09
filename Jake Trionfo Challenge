@@ -1,0 +1,12 @@
+import boto3
+import boto3.session
+
+aws_access_key = input("Please input aws_access_key_id: ")
+aws_secret_key = input("Please input aws_secret_access_key: ")
+session = boto3.session.Session(aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
+response = boto3.client('s3',aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
+
+bengals = response.get_object(Bucket='mindex-data-analytics-code-challenge', Key='bengals.csv')
+file_content = bengals['Body'].read().decode('utf-8')
+print(file_content)
+    

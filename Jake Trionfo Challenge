@@ -1,12 +1,33 @@
 import boto3
 import boto3.session
+import pandas as pd
 
+#Get access from user
 aws_access_key = input("Please input aws_access_key_id: ")
 aws_secret_key = input("Please input aws_secret_access_key: ")
+
+#Establish a session with aws
 session = boto3.session.Session(aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
 response = boto3.client('s3',aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
 
-bengals = response.get_object(Bucket='mindex-data-analytics-code-challenge', Key='bengals.csv')
-file_content = bengals['Body'].read().decode('utf-8')
-print(file_content)
-    
+#Retrieve data from s3 bucket
+def get_data(key):
+    data = response.get_object(Bucket='mindex-data-analytics-code-challenge', Key=key)
+    parsed_data = data['Body']
+    data_end = pd.read_csv(parsed_data)
+    return data_end
+
+bengals_data = get_data('bengals.csv')
+boyd_data = get_data('boyd_receiving.csv')
+chase_data = get_data('chase_receiving.csv')
+higgins_data = get_data('higgins_receiving.csv')
+
+print(bengals_data)
+
+""" DUMP
+- bengals_content = bengals['Body'].read().decode('utf-8')
+
+
+
+
+"""

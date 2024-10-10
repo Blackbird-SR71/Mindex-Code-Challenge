@@ -1,6 +1,8 @@
 import boto3
 import boto3.session
 import pandas as pd
+from sqlalchemy import create_engine
+import psycopg2
 
 #Get access from user
 aws_access_key = input("Please input aws_access_key_id: ")
@@ -38,7 +40,9 @@ higgins_data = get_data('higgins_receiving.csv')
 
 #Merge player data into global table
 global_table = pd.merge(bengals_data,merge_player_data(boyd_data,chase_data,higgins_data), how='left', on='Week')
-print(global_table)
 
+#Write dataframe to postgresql DB
+engine = create_engine('postgresql+psycopg2://jake_trionfo:takejrionfo@ls-2619b6b15c9bdc80a23f6afb7eee54cf0247da21.ca3yee6xneaj.us-east-1.rds.amazonaws.com/postgres')
+global_table.to_sql('jake_trionfo', if_exists='replace', con=engine)
 """ DUMP
 """

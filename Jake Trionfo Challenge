@@ -17,6 +17,7 @@ def get_data(key):
     data = response.get_object(Bucket='mindex-data-analytics-code-challenge', Key=key)
     parsed_data = pd.read_csv(data['Body'])
     if(key == 'bengals.csv'):
+        print(parsed_data)
         for x in range(len(parsed_data['Result'])):
             if(parsed_data['Result'][x] == 1.0):
                 parsed_data['Result'][x] = 'Win'
@@ -29,18 +30,41 @@ def get_data(key):
 
 #Merge player data
 def merge_player_data(table,table1,table2):
-    result = pd.merge(table,table1, how='inner', on='Week')
-    return pd.merge(result,table2, how='inner', on='Week')
+    result = pd.merge(table,table1, how='outer', on='Week')
+    return pd.merge(result,table2, how='outer', on='Week')
 
 #assign data
 bengals_data = get_data('bengals.csv')
 boyd_data = get_data('boyd_receiving.csv')
-chase_data = get_data('chase_receiving.csv')
 higgins_data = get_data('higgins_receiving.csv')
+chase_data = get_data('chase_receiving.csv')
 
 #Merge player data into global table
-global_table = pd.merge(bengals_data,merge_player_data(boyd_data,chase_data,higgins_data), how='left', on='Week')
+global_table = pd.merge(bengals_data,merge_player_data(boyd_data,higgins_data,chase_data), how='outer', on='Week')
 
 #Write dataframe to postgresql DB
 engine = create_engine('postgresql+psycopg2://jake_trionfo:takejrionfo@ls-2619b6b15c9bdc80a23f6afb7eee54cf0247da21.ca3yee6xneaj.us-east-1.rds.amazonaws.com/postgres')
 global_table.to_sql('jake_trionfo', if_exists='replace', con=engine)
+
+#END TIME: 4 Hours / 37 mins / 19 sec
+
+"""_summary_ SQL script
+create or replace view public.season_totals
+-- selects int data and formats
+	as select sum(jt."Yards_x") as boyd_yards_total,
+ 		sum(jt."Yards_y") as higgins_yards_total,
+ 		sum(jt."Yards") as chase_yards_total,
+-- selects string data and formats			
+		(sum(
+			case
+				when jt."Result" = 'Win'::text then 1
+				else 0
+			end
+			) || '-'::text) || sum(
+			case
+				when jt."Result" = 'Loss'::text then 1
+				else 0
+			end
+			) as "Win/Loss"
+from jake_trionfo as jt;
+"""

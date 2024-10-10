@@ -13,21 +13,23 @@ response = boto3.client('s3',aws_access_key_id=aws_access_key, aws_secret_access
 #Retrieve data from s3 bucket
 def get_data(key):
     data = response.get_object(Bucket='mindex-data-analytics-code-challenge', Key=key)
-    parsed_data = data['Body']
-    data_end = pd.read_csv(parsed_data)
-    return data_end
+    parsed_data = pd.read_csv(data['Body'])
+    return parsed_data
 
+#Merge player data
+def merge_player_data(table,table1,table2):
+    result = pd.merge(table,table1, how='inner', on='Week')
+    return pd.merge(result,table2, how='inner', on='Week')
+
+#assign data
 bengals_data = get_data('bengals.csv')
 boyd_data = get_data('boyd_receiving.csv')
 chase_data = get_data('chase_receiving.csv')
 higgins_data = get_data('higgins_receiving.csv')
 
-print(bengals_data)
+#Merge player data into global table
+global_table = pd.merge(bengals_data,merge_player_data(boyd_data,chase_data,higgins_data), how='left', on='Week')
+print(global_table)
 
 """ DUMP
-- bengals_content = bengals['Body'].read().decode('utf-8')
-
-
-
-
 """

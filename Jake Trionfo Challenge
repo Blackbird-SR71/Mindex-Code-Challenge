@@ -14,6 +14,15 @@ response = boto3.client('s3',aws_access_key_id=aws_access_key, aws_secret_access
 def get_data(key):
     data = response.get_object(Bucket='mindex-data-analytics-code-challenge', Key=key)
     parsed_data = pd.read_csv(data['Body'])
+    if(key == 'bengals.csv'):
+        for x in range(len(parsed_data['Result'])):
+            if(parsed_data['Result'][x] == 1.0):
+                parsed_data['Result'][x] = 'Win'
+            elif(parsed_data['Result'][x] == 0.0):
+                parsed_data['Result'][x] = 'Loss'
+            else:
+                continue
+
     return parsed_data
 
 #Merge player data
